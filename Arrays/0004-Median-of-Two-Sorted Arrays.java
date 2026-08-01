@@ -1,6 +1,6 @@
 /*
  * Problem: 4. Median of Two Sorted Arrays
- * Difficulty: Hard
+ * Difficulty:Hard
  *
  * Approach:
  * 1. Create a new array to store the merged elements of both sorted arrays.
