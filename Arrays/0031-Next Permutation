@@ -1,0 +1,364 @@
+# Next Permutation
+
+## Problem
+
+Given an array of integers, rearrange it into the **next lexicographically greater permutation**.
+
+If the current arrangement is already the largest possible permutation, rearrange the array into the **smallest possible order**.
+
+### Example
+
+```text
+Input:  [1,2,3]
+Output: [1,3,2]
+```
+
+```text
+Input:  [3,2,1]
+Output: [1,2,3]
+```
+
+---
+
+## Approach
+
+The main idea is to find the **smallest possible change** that makes the current permutation larger.
+
+Instead of generating all permutations, we work directly on the given array.
+
+### Step 1: Find the position where the change should happen
+
+Start from the **right side** of the array.
+
+Why from the right?
+
+Because we want the **next** permutation, not just any larger permutation. We should change the array as late as possible.
+
+We find the first index `i` such that:
+
+```text
+nums[i] < nums[i + 1]
+```
+
+While:
+
+```text
+nums[i] >= nums[i + 1]
+```
+
+we move `i` towards the left.
+
+For example:
+
+```text
+[1, 5, 4, 3, 2]
+       ← ← ←
+```
+
+From the right:
+
+```text
+3 > 2
+4 > 3
+5 > 4
+```
+
+These parts cannot be increased further while keeping their previous elements fixed.
+
+Finally:
+
+```text
+1 < 5
+```
+
+So `i = 0`.
+
+---
+
+### Step 2: Find the element to swap
+
+Once we find `i`, we need to make the permutation slightly larger.
+
+So we search from the **right side** for an element greater than `nums[i]`.
+
+We find the first:
+
+```text
+nums[j] > nums[i]
+```
+
+Then swap:
+
+```text
+nums[i] ↔ nums[j]
+```
+
+We search from the right because we want the **smallest possible increase**.
+
+---
+
+### Step 3: Reverse the remaining elements
+
+After swapping, the elements after index `i` must be arranged in the **smallest possible order**.
+
+The suffix is in decreasing order, so reversing it makes it increasing.
+
+For example:
+
+```text
+[2, 5, 4, 3, 1]
+    ↓
+[2, 1, 3, 4, 5]
+```
+
+This gives the immediate next permutation instead of skipping other permutations.
+
+---
+
+### Step 4: What if no `i` exists?
+
+Consider:
+
+```text
+[3,2,1]
+```
+
+From right to left:
+
+```text
+2 > 1
+3 > 2
+```
+
+There is no position where:
+
+```text
+nums[i] < nums[i + 1]
+```
+
+This means the array is already the **largest permutation**.
+
+Therefore, reverse the entire array:
+
+```text
+[3,2,1]
+   ↓
+[1,2,3]
+```
+
+---
+
+## Algorithm
+
+```text
+1. Set i = n - 2.
+
+2. Move i from right to left while:
+       nums[i] >= nums[i + 1]
+
+3. If i >= 0:
+       Set j = n - 1.
+
+       Move j from right to left while:
+           nums[j] <= nums[i]
+
+       Swap nums[i] and nums[j].
+
+4. Reverse the elements from i + 1 to n - 1.
+
+5. The array is now the next permutation.
+```
+
+---
+
+## Java Code
+
+```java
+class Solution {
+    public void nextPermutation(int[] nums) {
+
+        int n = nums.length;
+
+        // Step 1: Find the position where the change should happen
+        int i = n - 2;
+
+        while (i >= 0 && nums[i] >= nums[i + 1]) {
+            i--;
+        }
+
+        // Step 2: Find the element to swap with nums[i]
+        if (i >= 0) {
+
+            int j = n - 1;
+
+            while (nums[j] <= nums[i]) {
+                j--;
+            }
+
+            // Swap nums[i] and nums[j]
+            int temp = nums[i];
+            nums[i] = nums[j];
+            nums[j] = temp;
+        }
+
+        // Step 3: Reverse the remaining part
+        int left = i + 1;
+        int right = n - 1;
+
+        while (left < right) {
+
+            int temp = nums[left];
+            nums[left] = nums[right];
+            nums[right] = temp;
+
+            left++;
+            right--;
+        }
+    }
+}
+```
+
+---
+
+## Example Walkthrough
+
+### Input
+
+```text
+[1,3,2]
+```
+
+### Find `i`
+
+Start from the right:
+
+```text
+3 >= 2 → move left
+1 < 3  → stop
+```
+
+So:
+
+```text
+i = 0
+```
+
+### Find `j`
+
+Search from the right:
+
+```text
+2 > 1 → found
+```
+
+So:
+
+```text
+j = 2
+```
+
+Swap:
+
+```text
+[1,3,2]
+ ↑   ↑
+ i   j
+
+      ↓
+
+[2,3,1]
+```
+
+### Reverse the part after `i`
+
+```text
+[2 | 3,1]
+      ↓
+[2 | 1,3]
+```
+
+Final result:
+
+```text
+[2,1,3]
+```
+
+---
+
+## Why This Approach?
+
+A brute-force approach would be:
+
+```text
+Generate all permutations
+        ↓
+Sort them
+        ↓
+Find the given permutation
+        ↓
+Take the next one
+```
+
+Although that can produce the correct answer, it is inefficient and requires storing many permutations.
+
+Instead, this approach directly transforms the given permutation into its next permutation.
+
+The key thinking is:
+
+```text
+Find where we can increase
+          ↓
+Make the smallest increase
+          ↓
+Make the remaining part as small as possible
+```
+
+---
+
+## Complexity
+
+### Time Complexity
+
+```text
+O(n)
+```
+
+We scan the array from right to left and reverse the remaining portion.
+
+Even though there are multiple loops, each loop processes at most `n` elements, so the total remains:
+
+```text
+O(n)
+```
+
+### Space Complexity
+
+```text
+O(1)
+```
+
+We modify the original array directly and use only a few variables such as:
+
+```text
+i
+j
+left
+right
+temp
+```
+
+Therefore, the algorithm uses **constant extra space**.
+
+---
+
+## Key Takeaway
+
+Remember the algorithm using these three steps:
+
+```text
+1. Find where to increase
+2. Swap with the right suitable element
+3. Reverse the remaining part
+```
+
+This allows us to find the next permutation **without generating all permutations**.
